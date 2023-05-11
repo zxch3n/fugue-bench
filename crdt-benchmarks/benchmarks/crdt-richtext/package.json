@@ -1,0 +1,19 @@
+{
+  "name": "crdt-richtext-bench",
+  "version": "1.0.0",
+  "description": "crdt-richtext Simple benchmarks",
+  "main": "./run.js",
+  "type": "module",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "start": "([ -f \"./dist/bundle.js\" ] || npm run dist) && node --expose-gc run.js && npm run table",
+    "table": "echo 'crdt-richtext results: \n\n' && node ../../bin/render-table.js ../results.json 6000 crdt-richtext",
+    "dist": "npm run clean && rollup -c && gzip --keep dist/*"
+  },
+  "author": "Matthew Weidner, Seph Gentle, and Martin Kleppmann",
+  "license": "MIT",
+  "dependencies": {
+    "crdt-richtext-wasm": "0.2.8-alpha-2",
+    "seedrandom": "^3.0.5"
+  }
+}

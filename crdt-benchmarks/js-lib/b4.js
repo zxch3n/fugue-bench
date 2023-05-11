@@ -16,15 +16,13 @@ export const runBenchmarkB4 = async (crdtFactory, filter) => {
     for (let trial = -WARMUP_TRIALS; trial < MEASURED_TRIALS; trial++) {
       let encodedState = /** @type {any} */ (null);
       await (async () => {
-        let updateSize = 0;
-
         // Extra effort to encourage GC before starting measurement, since otherwise ending
         // measurements don't always match what a heap snapshot says.
         await new Promise(resolve => setTimeout(resolve, 1000));
         const startMemUsed = getMemUsed();
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        let doc1 = crdtFactory.create(update => {updateSize += update.length})
+        let doc1 = crdtFactory.create()
         benchmarkTime(crdtFactory.getName(), `${id} (time)`, () => {
           for (let i = 0; i < inputData.length; i++) {
             changeFunction(doc1, inputData[i], i)
@@ -32,7 +30,6 @@ export const runBenchmarkB4 = async (crdtFactory, filter) => {
         }, trial)
         logMemoryUsed(crdtFactory.getName(), id, startMemUsed, trial)
         check(doc1)
-        setBenchmarkResult(crdtFactory.getName(), `${id} (updateSize)`, `${updateSize} bytes`, trial)
         benchmarkTime(crdtFactory.getName(), `${id} (encodeTime)`, () => {
           encodedState = doc1.getEncodedState()
         }, trial)
@@ -138,21 +135,19 @@ export const runBenchmarkB4 = async (crdtFactory, filter) => {
 
   await runBenchmark('[B4x100] Apply real-world editing dataset 100 times', filter, async benchmarkName => {
     const multiplicator = 100
-    for (let trial = -WARMUP_TRIALS; trial < MEASURED_TRIALS; trial++) {
+    for (let trial = 0; trial < MEASURED_TRIALS; trial++) {
       // Pause a bit to encourage GC between trials (else may OOM after several trials).
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       let encodedState = /** @type {any} */ (null);
 
       await (async () => {
-        let updateSize = 0;
-
         // Extra effort to encourage GC before starting measurement.
         await new Promise(resolve => setTimeout(resolve, 100));
         const startMemUsed = getMemUsed();
         await new Promise(resolve => setTimeout(resolve, 100));
 
-        let doc = crdtFactory.create(update => {updateSize += update.length})
+        let doc = crdtFactory.create()
 
         benchmarkTime(crdtFactory.getName(), `${benchmarkName} (time)`, () => {
           for (let iterations = 0; iterations < multiplicator; iterations++) {
@@ -171,7 +166,6 @@ export const runBenchmarkB4 = async (crdtFactory, filter) => {
           }
         }, trial)
         logMemoryUsed(crdtFactory.getName(), benchmarkName, startMemUsed, trial)
-        setBenchmarkResult(crdtFactory.getName(), `${benchmarkName} (updateSize)`, `${updateSize} bytes`, trial)
         /**
          * @type {any}
          */
